@@ -14,9 +14,9 @@ import java.util.Locale;
 import java.util.Map;
 
 public class Busybox {
-    private static String path;
     public static final Worker SU=new Worker("su");
     public static final Worker SH=new Worker("sh");
+    private static String path;
 
     public static String[] execute(String... commands) throws IOException{
         if(SU.isAvailable())return SU.execute(commands);
@@ -70,7 +70,7 @@ public class Busybox {
 
         public boolean isAvailable(){
             try{
-                return execute("echo busybox")[0].equals("busybox");
+                return execute("echo test")[0].equals("test");
             }catch (Exception e){
                 return false;
             }
@@ -95,7 +95,7 @@ public class Busybox {
             return builder.toString();
         }
 
-        public synchronized String[] execute(String... commands) throws IOException{
+        public String[] execute(String... commands) throws IOException {
             if(path==null)throw new IOException("Busybox is not initialized");
             if(commands.length==0)return new String[0];
             Process process=getProcess();
@@ -109,7 +109,7 @@ public class Busybox {
             outputStream.flush();
             String result="";
             String error="";
-            while (!result.trim().endsWith(marker)){
+            while (!result.trim().endsWith(marker) && !error.endsWith("\n")) {
                 result += getAvailableText(inputStream);
                 error += getAvailableText(errorStream);
             }
