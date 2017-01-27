@@ -1,1 +1,1 @@
-include ':busybox', ':sample'
+include ':busybox'

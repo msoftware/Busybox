@@ -18,16 +18,45 @@ public class Busybox {
     public static final Worker SH=new Worker("sh");
     private static String path;
 
+    /**
+     * Executes shell commands
+     *
+     * @param commands commands to execute
+     * @return lines: result of execution
+     * @throws IOException exception with error text of commands execution
+     */
     public static String[] execute(String... commands) throws IOException{
         if(SU.isAvailable())return SU.execute(commands);
         else return SH.execute(commands);
     }
 
+    /**
+     * Same as {@link #execute(String...) execute(String...)} but throws no exception
+     *
+     * @param commands lines: result of execution
+     * @return lines: result of execution or null if execution failed
+     */
+    public static String[] executeSafe(String... commands) {
+        try {
+            return execute(commands);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Kill all active workers and clear workers pool
+     */
     public static void reset(){
         SU.reset();
         SH.reset();
     }
 
+    /**
+     * Initialize and extract busybox binary executable
+     * @param context app context
+     * @throws IOException if initialization failed
+     */
     public static void init(Context context) throws IOException{
         File file=new File(context.getFilesDir(),"busybox");
         if(!file.exists()){
@@ -63,11 +92,17 @@ public class Busybox {
             return process;
         }
 
+        /**
+         * See {@link Busybox#reset() Busybox.reset()}
+         */
         public void reset(){
             for(Process process:pool.keySet())process.destroy();
             pool.clear();
         }
 
+        /**
+         * @return true if busybox can execute commands with provided shell
+         */
         public boolean isAvailable(){
             try{
                 return execute("echo test")[0].equals("test");
@@ -95,6 +130,17 @@ public class Busybox {
             return builder.toString();
         }
 
+        public String[] executeSafe(String... commands) {
+            try {
+                return execute(commands);
+            } catch (IOException e) {
+                return null;
+            }
+        }
+
+        /**
+         * See {@link Busybox#execute(String...) Busybox.execute(String...)}
+         */
         public String[] execute(String... commands) throws IOException {
             if(path==null)throw new IOException("Busybox is not initialized");
             if(commands.length==0)return new String[0];
